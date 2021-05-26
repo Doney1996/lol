@@ -13,6 +13,8 @@ func SetupRouter() *gin.Engine {
 	gin.SetMode(gin.DebugMode)
 	r := gin.Default()
 	r.Use(Recover)
+	//解决跨域
+	r.Use(Cors())
 	// 告诉gin框架去哪里找模板文件
 	r.Static("/static", "./static")
 	v1Group := r.Group("/v1")
@@ -25,6 +27,25 @@ func SetupRouter() *gin.Engine {
 		v1Group.POST("/jiesuan", controller.JieSuan)
 	}
 	return r
+}
+
+func Cors() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		method := c.Request.Method
+
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, Authorization, Token")
+		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE,UPDATE") //服务器支持的所有跨域请求的方
+		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
+		c.Header("Access-Control-Allow-Credentials", "true")
+
+		//放行所有OPTIONS方法
+		if method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+		}
+		// 处理请求
+		c.Next()
+	}
 }
 
 func Recover(c *gin.Context) {
