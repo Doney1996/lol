@@ -9,6 +9,7 @@ import (
 	"lol/db"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func AddRecord(c *gin.Context) {
@@ -38,24 +39,37 @@ func JieSuan(c *gin.Context) {
 	common.DealErr(err)
 
 	var ids []string
+	currentTime := time.Now().Format("2006-01-02 15:04:05")
 	for _, jy := range jies {
 		ids = append(ids, strconv.FormatInt(jy.Hero, 10))
 		var w int
-		if jy.SubTotal>0 {
+		if jy.SubTotal > 0 {
 			w = 1
-		}else if jy.SubTotal == 0 {
+		} else if jy.SubTotal == 0 {
 			w = 0
-		}else {
+		} else {
 			w = -1
 		}
 		record := db.Record{
-			UseHeroId: jy.Hero,
-			Score:     jy.Score,
-			Win:       w,
-			Subtotal: jy.SubTotal,
+			UseHeroId:   jy.Hero,
+			Score:       jy.Score,
+			Win:         w,
+			Subtotal:    jy.SubTotal,
+			UseHeroName: getHeroNameById(db.HeroList, jy.Hero),
+			CreateTime:  currentTime,
 		}
 		db.AddRecord(&record)
 	}
 	db.DisableHero(ids)
 	c.JSON(http.StatusOK, jies)
+}
+
+// 根据英雄id获取英雄名称
+func getHeroNameById(list []db.Hero, heroId int64) string {
+	for _, one := range list {
+		if one.Id == heroId {
+			return one.HeroName
+		}
+	}
+	return ""
 }

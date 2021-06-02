@@ -18,6 +18,7 @@ type Record struct {
 	Score       float64
 	UnitPrice   int
 	Subtotal    float64
+	CreateTime  string
 }
 
 type Hero struct {
@@ -31,15 +32,24 @@ type Hero struct {
 	Position      string `db:"position"`
 }
 
+var HeroList []Hero
+
 var Db *sqlx.DB
 
 func init() {
 	log.Println("-----------------------------------")
-	database, err := sqlx.Open("mysql", "root:admin1984@tcp(119.45.13.75:3306)/lol")
+	database, err := sqlx.Open("mysql", "root:admin1984@tcp(114.96.105.111:3306)/lol")
 	if err != nil {
 		fmt.Println("open mysql failed,", err)
 		return
 	}
 	Db = database
 	log.Println(database, "database init success")
+
+	//查询出所有的英雄记录放在内存
+	getAllHero()
+}
+
+func getAllHero() {
+	HeroList = GetAllHero()
 }
