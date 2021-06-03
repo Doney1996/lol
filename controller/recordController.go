@@ -7,6 +7,8 @@ import (
 	"log"
 	"lol/common"
 	"lol/db"
+	"lol/entity"
+	"lol/repository"
 	"net/http"
 	"strconv"
 	"time"
@@ -24,11 +26,12 @@ func AddRecord(c *gin.Context) {
 	log.Println(records)
 	for _, record := range records {
 		log.Println(records)
-		db.AddRecord(&record)
+		repository.AddRecord(&record)
 	}
 	c.JSON(http.StatusOK, records)
 }
 
+// JieSuan 结算游戏
 func JieSuan(c *gin.Context) {
 
 	var jies []Jie
@@ -55,17 +58,17 @@ func JieSuan(c *gin.Context) {
 			Score:       jy.Score,
 			Win:         w,
 			Subtotal:    jy.SubTotal,
-			UseHeroName: getHeroNameById(db.HeroList, jy.Hero),
+			UseHeroName: getHeroNameById(repository.HeroList, jy.Hero),
 			CreateTime:  currentTime,
 		}
-		db.AddRecord(&record)
+		repository.AddRecord(&record)
 	}
-	db.DisableHero(ids)
+	repository.DisableHero(ids)
 	c.JSON(http.StatusOK, jies)
 }
 
 // 根据英雄id获取英雄名称
-func getHeroNameById(list []db.Hero, heroId int64) string {
+func getHeroNameById(list []entity.Hero, heroId int64) string {
 	for _, one := range list {
 		if one.Id == heroId {
 			return one.HeroName

@@ -3,6 +3,7 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"log"
+	"lol/common"
 	"lol/controller"
 	"net/http"
 	"runtime/debug"
@@ -11,25 +12,38 @@ import (
 func SetupRouter() *gin.Engine {
 
 	gin.SetMode(gin.DebugMode)
+
 	r := gin.Default()
-	r.Use(Recover)
-	//解决跨域
+
 	r.Use(Cors())
-	// 告诉gin框架去哪里找模板文件
-	r.Static("/static", "./static")
+
+	r.POST("/login", controller.Login)
+	r.POST("/register", controller.RegisterUser)
+
+	r.Use(common.JWTAuth())
+
+	PathRouter(r)
+
+	r.Use(Recover)
+	return r
+}
+
+// PathRouter 添加路由的路径
+func PathRouter(r *gin.Engine) {
 	v1Group := r.Group("/v1")
 	{
 		v1Group.POST("/addRecord", controller.AddRecord)
 		v1Group.POST("/disable", controller.DisableHero)
 		v1Group.POST("/enable", controller.EnableAllHero)
+		v1Group.POST("/enableById", controller.EnableAllHeroById)
 		v1Group.POST("/addHero", controller.AddHero)
 		v1Group.GET("/getAllHero", controller.GetAllHero)
 		v1Group.POST("/jiesuan", controller.JieSuan)
 		v1Group.GET("/recent", controller.GetRecentResult)
 	}
-	return r
 }
 
+// Cors 解决跨域
 func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method
@@ -49,6 +63,7 @@ func Cors() gin.HandlerFunc {
 	}
 }
 
+// Recover 全局异常处理
 func Recover(c *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -59,7 +74,7 @@ func Recover(c *gin.Context) {
 			//c.JSON(http.StatusOK, Result.Fail(errorToString(r)))
 			//Result.Fail不是本例的重点，因此用下面代码代替
 			c.JSON(http.StatusOK, gin.H{
-				"code": "1",
+				"code": "500",
 				"msg":  errorToString(r),
 				"data": nil,
 			})

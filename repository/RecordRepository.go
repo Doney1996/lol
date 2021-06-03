@@ -1,14 +1,15 @@
-package db
+package repository
 
 import (
 	"lol/common"
+	"lol/db"
 )
 
-func AddRecord(record *Record) {
+func AddRecord(record *db.Record) {
 	var sql = `INSERT INTO recording 
 		( play_id, player_id, player_name, use_hero_id, use_hero_name, win, score, unit_price, Subtotal,create_time,sub_score) 
 		VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?);`
-	_, err := Db.Exec(sql,
+	_, err := db.Db.Exec(sql,
 		record.PlayId,
 		record.PlayerId,
 		record.PlayerName,
