@@ -65,21 +65,21 @@ var (
 
 // CustomClaims 载荷，可以加一些自己需要的信息
 type CustomClaims struct {
-	ID       string `json:"id"`
+	ID       int64  `json:"id"`
 	Name     string `json:"name"`
 	GameName string `json:"game_name"`
 	UserName string `json:"user_name"`
 	jwt.StandardClaims
 }
 
-// 新建一个jwt实例
+// NewJWT 新建一个jwt实例
 func NewJWT() *JWT {
 	return &JWT{
 		[]byte(GetSignKey()),
 	}
 }
 
-// 获取signKey
+// GetSignKey 获取signKey
 func GetSignKey() string {
 	return SignKey
 }

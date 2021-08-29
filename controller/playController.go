@@ -3,9 +3,8 @@ package controller
 import (
 	"lol/common"
 	"lol/entity"
-	"lol/repository"
+	"lol/repository/play"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -27,7 +26,7 @@ func RegisterUser(c *gin.Context) {
 	var player entity.Player
 	err := c.BindJSON(&player)
 	common.DealErr(err)
-	repository.AddPlayer(&player)
+	play.AddPlayer(&player)
 	c.JSON(http.StatusOK, gin.H{
 		"status": 0,
 		"msg":    "注册成功！",
@@ -40,7 +39,7 @@ func Login(c *gin.Context) {
 	err := c.BindJSON(&loginReq)
 	common.DealErr(err)
 
-	isPass, player, err := repository.LoginCheck(loginReq.Username, loginReq.Password)
+	isPass, player := play.LoginCheck(loginReq.Username, loginReq.Password)
 	if isPass {
 		generateToken(c, player)
 	} else {
@@ -58,7 +57,7 @@ func generateToken(c *gin.Context, player *entity.Player) {
 		SigningKey: []byte("ruozheyouxi"),
 	}
 	claims := common.CustomClaims{
-		ID:       strconv.FormatInt(player.Id, 10),
+		ID:       player.Id,
 		Name:     player.Name,
 		GameName: player.GameName,
 		UserName: player.Username,

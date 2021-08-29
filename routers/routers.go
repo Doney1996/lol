@@ -20,8 +20,8 @@ func SetupRouter() *gin.Engine {
 	r.POST("/login", controller.Login)
 	r.POST("/register", controller.RegisterUser)
 
-	r.Use(common.JWTAuth())
-
+	//r.Use(common.JWTAuth())
+	r.Use(common.TempUser())
 	PathRouter(r)
 
 	r.Use(Recover)
@@ -37,9 +37,21 @@ func PathRouter(r *gin.Engine) {
 		v1Group.POST("/enable", controller.EnableAllHero)
 		v1Group.POST("/enableById", controller.EnableAllHeroById)
 		v1Group.POST("/addHero", controller.AddHero)
-		v1Group.GET("/getAllHero", controller.GetAllHero)
+		v1Group.GET("/getAllHero", controller.GetAllHeroTop)
+		v1Group.GET("/getAllHeroList", controller.GetAllHeroInfoList)
 		v1Group.POST("/jiesuan", controller.JieSuan)
 		v1Group.GET("/recent", controller.GetRecentResult)
+
+		//赛季
+		v1Group.POST("/openNewSeason", controller.OpenNewSeason)
+		v1Group.POST("/closeSeason", controller.CloseSeason)
+
+		//hero
+		v1Group.GET("/disableHeroIds", controller.GetHeroBySeason)
+
+		//对局
+		v1Group.GET("/openNewMatch", controller.OpenNewMatch)
+
 	}
 }
 

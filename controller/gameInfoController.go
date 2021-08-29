@@ -20,7 +20,7 @@ from recording
 where create_time = (select create_time from recording order by create_time desc limit 1)`
 
 	var list []result
-	err := db.Db.Select(&list, sql)
-	common.DealErr(err)
+	db := db.DB.Select(&list, sql)
+	common.DealDbErrs(db)
 	c.JSON(http.StatusOK, list)
 }

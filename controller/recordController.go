@@ -6,17 +6,17 @@ import (
 	"io/ioutil"
 	"log"
 	"lol/common"
-	"lol/db"
 	"lol/entity"
 	"lol/repository"
+	"lol/repository/hero"
 	"net/http"
 	"strconv"
 	"time"
 )
 
-func AddRecord(c *gin.Context) {
+func AddRecord2(c *gin.Context) {
 
-	var records []db.Record
+	var records []entity.Record
 	body, err := ioutil.ReadAll(c.Request.Body)
 	common.DealErr(err)
 
@@ -42,7 +42,7 @@ func JieSuan(c *gin.Context) {
 	common.DealErr(err)
 
 	var ids []string
-	currentTime := time.Now().Format("2006-01-02 15:04:05")
+	//currentTime := time.Now().Format("2006-01-02 15:04:05")
 	for _, jy := range jies {
 		ids = append(ids, strconv.FormatInt(jy.Hero, 10))
 		var w int
@@ -53,17 +53,16 @@ func JieSuan(c *gin.Context) {
 		} else {
 			w = -1
 		}
-		record := db.Record{
-			UseHeroId:   jy.Hero,
-			Score:       jy.Score,
-			Win:         w,
-			Subtotal:    jy.SubTotal,
-			UseHeroName: getHeroNameById(repository.HeroList, jy.Hero),
-			CreateTime:  currentTime,
+		record := entity.Record{
+			HeroId:     jy.Hero,
+			Score:      jy.Score,
+			IsWin:      int64(w),
+			Amount:     jy.SubTotal,
+			CreateTime: time.Now(),
 		}
 		repository.AddRecord(&record)
 	}
-	repository.DisableHero(ids)
+	hero.DisableHero(ids)
 	c.JSON(http.StatusOK, jies)
 }
 
