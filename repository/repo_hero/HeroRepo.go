@@ -1,12 +1,12 @@
-package hero
+package repo_hero
 
 import (
 	"lol/common"
-	"lol/db"
 	"lol/entity"
+	"lol/sys_sb"
 )
 
-var DB = db.DB
+var DB = sys_sb.DB
 
 func DisableHero(ids []string) {
 
@@ -20,7 +20,7 @@ func AddHero(hero *entity.Hero) {
 
 func GetAllHero() []entity.Hero {
 	var heroes []entity.Hero
-	db := DB.Select(&heroes, "select * from hero")
+	db := DB.Find(&heroes)
 	common.DealDbErrs(db)
 	return heroes
 }
@@ -34,7 +34,7 @@ type showHero struct {
 func GetAllHeroListInfo() []entity.Hero {
 	var sql = `select id,hero_name,hero_other_name,sort,disable	,tier,	img_position,	position from hero`
 	var list []entity.Hero
-	db := db.DB.Select(&list, sql)
+	db := sys_sb.DB.Select(&list, sql)
 	common.DealDbErrs(db)
 	return list
 }
@@ -55,7 +55,7 @@ from (
 
 order by t.sum desc;`
 	var list []showHero
-	db := db.DB.Select(&list, sql)
+	db := sys_sb.DB.Select(&list, sql)
 	common.DealDbErrs(db)
 	return list
 }

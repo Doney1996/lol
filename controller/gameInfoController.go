@@ -3,7 +3,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"lol/common"
-	"lol/db"
+	"lol/sys_sb"
 	"net/http"
 )
 
@@ -16,11 +16,11 @@ type result struct {
 
 func GetRecentResult(c *gin.Context) {
 	sql := `select use_hero_name,score,sub_score,Subtotal
-from recording
-where create_time = (select create_time from recording order by create_time desc limit 1)`
+				from recording
+			where create_time = (select create_time from recording order by create_time desc limit 1)`
 
 	var list []result
-	db := db.DB.Select(&list, sql)
+	db := sys_sb.DB.Select(&list, sql)
 	common.DealDbErrs(db)
 	c.JSON(http.StatusOK, list)
 }

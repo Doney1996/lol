@@ -1,4 +1,4 @@
-package db
+package sys_sb
 
 import (
 	_ "github.com/go-sql-driver/mysql"
@@ -12,7 +12,7 @@ import (
 var DB *gorm.DB
 
 func init() {
-	db, err := gorm.Open("mysql", "root:admin1984@tcp(114.96.105.111:3306)/lol_dev?parseTime=true")
+	db, err := gorm.Open("mysql", "root:admin1984@tcp(114.96.105.111:3306)/lol_dev?parseTime=true&&loc=Local")
 	common.DealErr(err)
 	db.SingularTable(true)
 	db.AutoMigrate(&entity.Record{})

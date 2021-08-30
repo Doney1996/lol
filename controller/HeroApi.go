@@ -2,24 +2,28 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"lol/cache"
 	"lol/entity"
-	"lol/repository/hero"
-	"lol/repository/match"
-	"lol/repository/record"
-	"lol/repository/season"
+	"lol/repository/repo_match"
+	"lol/repository/repo_record"
+	"lol/repository/repo_season"
 	"net/http"
 )
 
-// GetHero 所有英雄
-func GetHero(c *gin.Context) {
-	heroList := hero.GetAllHero()
-	c.JSON(http.StatusOK, heroList)
+// GetAllHero 所有英雄
+func GetAllHero(c *gin.Context) {
+	c.JSON(http.StatusOK, entity.Result{
+		Code:    100,
+		Message: "",
+		Data:    cache.HeroList,
+	})
 }
 
-// GetHeroBySeason 赛季英雄状况
+// GetHeroBySeason 当前赛季禁用的英雄
 func GetHeroBySeason(c *gin.Context) {
 	//获取当前赛季
-	currentSeason := season.GetCurrentSeason("class", "0")
+	gameType := c.MustGet("gameType").(string)
+	currentSeason := repo_season.GetCurrentSeason(gameType, "0")
 	if currentSeason == (entity.Season{}) {
 		c.JSON(http.StatusOK, entity.Result{
 			Code:    101,
@@ -28,14 +32,15 @@ func GetHeroBySeason(c *gin.Context) {
 		})
 		return
 	}
-	matchList := match.GetCurrentSeasonMatch(currentSeason.Id)
+	//当前赛季所有结束的对局
+	matchList := repo_match.GetMatchBySeasonAndStatus(currentSeason.Id, "1")
 	var matchIds []int64
 	for i, e := range matchList {
 		matchIds[i] = e.Id
 	}
-	records := record.GetRecordByMatchIds(matchIds)
+	records := repo_record.GetRecordsByMatchIds(matchIds)
 
-	//禁用对所有英雄
+	//禁用的所有英雄的id
 	var disableHeroIds []int64
 	for i, e := range records {
 		disableHeroIds[i] = e.Id

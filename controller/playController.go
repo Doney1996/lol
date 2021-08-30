@@ -3,7 +3,7 @@ package controller
 import (
 	"lol/common"
 	"lol/entity"
-	"lol/repository/play"
+	"lol/repository/repo_play"
 	"net/http"
 	"time"
 
@@ -26,7 +26,7 @@ func RegisterUser(c *gin.Context) {
 	var player entity.Player
 	err := c.BindJSON(&player)
 	common.DealErr(err)
-	play.AddPlayer(&player)
+	repo_play.AddPlayer(&player)
 	c.JSON(http.StatusOK, gin.H{
 		"status": 0,
 		"msg":    "注册成功！",
@@ -39,7 +39,7 @@ func Login(c *gin.Context) {
 	err := c.BindJSON(&loginReq)
 	common.DealErr(err)
 
-	isPass, player := play.LoginCheck(loginReq.Username, loginReq.Password)
+	isPass, player := repo_play.LoginCheck(loginReq.Username, loginReq.Password)
 	if isPass {
 		generateToken(c, player)
 	} else {

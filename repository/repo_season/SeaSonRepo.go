@@ -1,24 +1,15 @@
-package season
+package repo_season
 
 import (
 	"lol/common"
-	"lol/db"
 	"lol/entity"
+	"lol/sys_sb"
 )
 
-var DB = db.DB
+var DB = sys_sb.DB
 
 // GetCurrentSeason 根据赛季类型查看当前赛季
 func GetCurrentSeason(seasonType string, lifeStatus string) entity.Season {
-	//var sql = `select id, season_name, life_status, create_time ,season_type
-	//			from season where season_type = ? and life_status = ? order by id desc limit 1 `
-	//var season []entity.Season
-	//DB.Select(&season, sql, seasonType, lifeStatus)
-	//if len(season) > 0 {
-	//	return season[0]
-	//}else {
-	//	return entity.Season{}
-	//}
 	var season entity.Season
 	db := DB.Where("season_type = ? and life_status = ? ", seasonType, lifeStatus).Last(&season)
 	if db.RecordNotFound() {
@@ -38,4 +29,11 @@ func InsertSeason(season *entity.Season) *entity.Season {
 func CloseSeason(id int64) {
 	db := DB.Model(&entity.Season{}).Update("life_status", "1").Where("id", id)
 	common.DealDbErrs(db)
+}
+
+func GetById(id int64) entity.Season {
+	var season entity.Season
+	err := DB.Where("id = ?", id).Find(&season).Error
+	common.DealErr(err)
+	return season
 }

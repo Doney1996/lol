@@ -1,77 +1,49 @@
 package controller
 
 import (
-	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
-	"log"
 	"lol/common"
 	"lol/entity"
-	"lol/repository"
-	"lol/repository/hero"
+	"lol/repository/repo_record"
+	"lol/repository/repo_season"
 	"net/http"
-	"strconv"
 	"time"
 )
 
-func AddRecord2(c *gin.Context) {
+// AddRecord 新增一条record
+func AddRecord(c *gin.Context) {
+	user := c.MustGet("claims").(common.CustomClaims)
 
-	var records []entity.Record
-	body, err := ioutil.ReadAll(c.Request.Body)
+	tmp := entity.Record{}
+	err := c.BindJSON(&tmp)
 	common.DealErr(err)
 
-	err = json.Unmarshal(body, &records)
-	common.DealErr(err)
-
-	log.Println(records)
-	for _, record := range records {
-		log.Println(records)
-		repository.AddRecord(&record)
+	recordObj := entity.Record{
+		UserId:     user.ID,
+		HeroId:     tmp.HeroId,
+		MatchId:    tmp.MatchId,
+		Score:      tmp.Score,
+		UnitPrice:  tmp.UnitPrice,
+		UpdateTime: time.Now(),
+		CreateTime: time.Now(),
 	}
-	c.JSON(http.StatusOK, records)
-}
 
-// JieSuan 结算游戏
-func JieSuan(c *gin.Context) {
-
-	var jies []Jie
-	body, err := ioutil.ReadAll(c.Request.Body)
-	common.DealErr(err)
-
-	err = json.Unmarshal(body, &jies)
-	common.DealErr(err)
-
-	var ids []string
-	//currentTime := time.Now().Format("2006-01-02 15:04:05")
-	for _, jy := range jies {
-		ids = append(ids, strconv.FormatInt(jy.Hero, 10))
-		var w int
-		if jy.SubTotal > 0 {
-			w = 1
-		} else if jy.SubTotal == 0 {
-			w = 0
-		} else {
-			w = -1
-		}
-		record := entity.Record{
-			HeroId:     jy.Hero,
-			Score:      jy.Score,
-			IsWin:      int64(w),
-			Amount:     jy.SubTotal,
-			CreateTime: time.Now(),
-		}
-		repository.AddRecord(&record)
+	//检查对局的状态
+	sea := repo_season.GetById(tmp.MatchId)
+	if sea.LifeStatus != 0 {
+		c.JSON(http.StatusOK, entity.Result{
+			Code:    101,
+			Message: "当前对局已结束",
+			Data:    nil,
+		})
+		return
 	}
-	hero.DisableHero(ids)
-	c.JSON(http.StatusOK, jies)
-}
 
-// 根据英雄id获取英雄名称
-func getHeroNameById(list []entity.Hero, heroId int64) string {
-	for _, one := range list {
-		if one.Id == heroId {
-			return one.HeroName
-		}
-	}
-	return ""
+	insert := repo_record.Insert(recordObj)
+	c.JSON(http.StatusOK, entity.Result{
+		Code:    100,
+		Message: "保存成功",
+		Data:    insert,
+	})
+
 }

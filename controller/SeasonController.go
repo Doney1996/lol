@@ -4,14 +4,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"lol/common"
 	"lol/entity"
-	"lol/repository/season"
+	"lol/repository/repo_season"
 	"net/http"
 	"strconv"
 	"time"
 )
 
 func OpenNewSeason(c *gin.Context) {
-	currentSeason := season.GetCurrentSeason("class", "0")
+	gameType := c.MustGet("gameType").(string)
+	currentSeason := repo_season.GetCurrentSeason(gameType, "0")
 	if currentSeason.Id > 0 {
 		c.JSON(http.StatusOK, entity.Result{
 			Code:    101,
@@ -19,7 +20,7 @@ func OpenNewSeason(c *gin.Context) {
 			Data:    nil,
 		})
 	} else {
-		finishedSeason := season.GetCurrentSeason("class", "1")
+		finishedSeason := repo_season.GetCurrentSeason("class", "1")
 
 		if finishedSeason.Id < 1 {
 			finishedSeason.SeasonName = "S0"
@@ -34,7 +35,7 @@ func OpenNewSeason(c *gin.Context) {
 			CreateTime: time.Now(),
 			SeasonType: "class",
 		}
-		season.InsertSeason(&newSeason)
+		repo_season.InsertSeason(&newSeason)
 		c.JSON(http.StatusOK, entity.Result{
 			Code:    100,
 			Message: "新赛季创建成功",
@@ -44,9 +45,10 @@ func OpenNewSeason(c *gin.Context) {
 }
 
 func CloseSeason(c *gin.Context) {
-	currentSeason := season.GetCurrentSeason("class", "0")
+	gameType := c.MustGet("gameType").(string)
+	currentSeason := repo_season.GetCurrentSeason(gameType, "0")
 	if currentSeason.Id > 0 {
-		season.CloseSeason(currentSeason.Id)
+		repo_season.CloseSeason(currentSeason.Id)
 		c.JSON(http.StatusOK, entity.Result{
 			Code:    100,
 			Message: "当前赛季已经成功结束",

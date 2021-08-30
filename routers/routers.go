@@ -22,6 +22,7 @@ func SetupRouter() *gin.Engine {
 
 	//r.Use(common.JWTAuth())
 	r.Use(common.TempUser())
+	r.Use(common.Biz())
 	PathRouter(r)
 
 	r.Use(Recover)
@@ -32,25 +33,28 @@ func SetupRouter() *gin.Engine {
 func PathRouter(r *gin.Engine) {
 	v1Group := r.Group("/v1")
 	{
+		// 对局
 		v1Group.POST("/addRecord", controller.AddRecord)
+
+		//英雄
+
+		v1Group.GET("/getAllHero", controller.GetAllHero)
+
 		v1Group.POST("/disable", controller.DisableHero)
 		v1Group.POST("/enable", controller.EnableAllHero)
 		v1Group.POST("/enableById", controller.EnableAllHeroById)
 		v1Group.POST("/addHero", controller.AddHero)
-		v1Group.GET("/getAllHero", controller.GetAllHeroTop)
 		v1Group.GET("/getAllHeroList", controller.GetAllHeroInfoList)
-		v1Group.POST("/jiesuan", controller.JieSuan)
 		v1Group.GET("/recent", controller.GetRecentResult)
 
 		//赛季
 		v1Group.POST("/openNewSeason", controller.OpenNewSeason)
 		v1Group.POST("/closeSeason", controller.CloseSeason)
 
-		//hero
-		v1Group.GET("/disableHeroIds", controller.GetHeroBySeason)
-
 		//对局
-		v1Group.GET("/openNewMatch", controller.OpenNewMatch)
+		v1Group.POST("/openNewMatch", controller.OpenNewMatch)
+		v1Group.POST("/getLastMatch", controller.GetLastMatch)
+		v1Group.POST("/closeNewMatch", controller.CloseNewMatch)
 
 	}
 }
