@@ -2,12 +2,14 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"lol/cache"
 	"lol/entity"
 	"lol/repository/repo_match"
 	"lol/repository/repo_record"
 	"lol/repository/repo_season"
 	"math"
 	"net/http"
+	"sort"
 	"time"
 )
 
@@ -78,15 +80,34 @@ func GetLastMatch(c *gin.Context) {
 		HeroName  string  `json:"hero_name,omitempty"`
 		PlayName  string  `json:"play_name,omitempty"`
 		Score     float64 `json:"score,omitempty"`
+		UintPrice float64 `json:"unit_price,omitempty"`
 		LastScore float64 `json:"last_score,omitempty"`
 		Amount    float64 `json:"amount,omitempty"`
 		IsWin     int64   `json:"is_win,omitempty"`
+	}
+	i := len(records)
+	var resultList = make([]rec, i)
+
+	sort.Slice(records, func(i, j int) bool {
+		return records[i].Score < records[j].Score
+	})
+
+	for index, record := range records {
+		resultList[index] = rec{
+			HeroName:  cache.GetHeroNameById(record.HeroId),
+			PlayName:  cache.GetPlayNameById(record.UserId),
+			Score:     record.Score,
+			UintPrice: record.UnitPrice,
+			LastScore: record.LastScore,
+			Amount:    record.Amount,
+			IsWin:     record.IsWin,
+		}
 	}
 
 	c.JSON(http.StatusOK, entity.Result{
 		Code:    100,
 		Message: "最新战绩",
-		Data:    records,
+		Data:    resultList,
 	})
 }
 
