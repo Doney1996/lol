@@ -5,8 +5,8 @@ import (
 	"lol/common"
 	"lol/entity"
 	"lol/expection"
+	"lol/repository/repo_match"
 	"lol/repository/repo_record"
-	"lol/repository/repo_season"
 	"net/http"
 	"time"
 )
@@ -30,15 +30,15 @@ func AddRecord(c *gin.Context) {
 	}
 
 	//检查对局的状态
-	sea := repo_season.GetById(tmp.MatchId)
-	if sea.LifeStatus != 0 {
+	match := repo_match.GetById(tmp.MatchId)
+	if match.LifeStatus != 0 {
 		panic(expection.BizErr{
 			Code: 410,
 			Msg:  "当前对局已结束",
 		})
-		return
 	}
 
+	//如何避免重复提交呢
 	insert := repo_record.Insert(recordObj)
 	c.JSON(http.StatusOK, entity.Result{
 		Code:    200,

@@ -3,7 +3,9 @@ package repo_record
 import (
 	"lol/common"
 	"lol/entity"
+	"lol/expection"
 	"lol/sys_sb"
+	"strings"
 )
 
 var DB = sys_sb.DB
@@ -16,8 +18,17 @@ func GetRecordsByMatchIds(ids []int64) []entity.Record {
 }
 
 func Insert(record entity.Record) entity.Record {
-	db := DB.Save(&record)
-	common.DealDbErrs(db)
+	err := DB.Save(&record).Error
+	if err != nil {
+		s := err.Error()
+		contains := strings.Contains(s, "Error 1062: Duplicate entry")
+		if contains {
+			panic(expection.BizErr{
+				Code: 420,
+				Msg:  "请勿重复插入记录",
+			})
+		}
+	}
 	return record
 }
 

@@ -1,29 +1,11 @@
 
-### 开启新的对局
-POST http://localhost:8080/v1/openNewMatch
+### 提交一条记录
+POST http://localhost:8080/v1/addRecord
+Content-Type: application/json
 
-<> 2021-08-30T161357.200.json
-<> 2021-08-30T161321.200.json
-<> 2021-08-30T155421.404.txt
-
-
-### 获取最后一次对局
-POST http://localhost:8080/v1/getLastMatch
-
-<> 2021-09-01T135552.200.json
-<> 2021-08-30T175239.200.json
-<> 2021-08-30T175101.200.json
-<> 2021-08-30T175032.200.json
-<> 2021-08-30T175009.200.json
-<> 2021-08-30T174906.200.json
-<> 2021-08-30T162533.200.json
-
-### 结束对局
-POST http://localhost:8080/v1/closeNewMatch
-
-###
-GET http://localhost:8080/v1/getAllHero
-
-<> 2021-08-30T164528.200.json
-<> 2021-08-30T164316.200.json
-<> 2021-08-30T164252.404.txt
+{
+  "hero_id": 1,
+  "match_id": 20,
+  "score": 10.1,
+  "unit_price": 10
+}

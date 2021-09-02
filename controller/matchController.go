@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"lol/cache"
 	"lol/common"
@@ -131,10 +132,11 @@ func CloseNewMatch(c *gin.Context) {
 	currentSeason := repo_season.GetCurrentSeason(gameType, "0")
 	match := repo_match.GetLastBySeasonId(currentSeason.Id)
 	records := repo_record.GetByMatchId(match.Id)
-	if len(records) < 1 {
+	if int64(len(records)) != match.PlayerNumber {
+		msg := fmt.Sprintf("玩家数量错误，当前玩家数量：%d，已提交：%d", match.PlayerNumber, len(records))
 		panic(expection.BizErr{
 			Code: 410,
-			Msg:  "结算时不能没记录",
+			Msg:  msg,
 		})
 	}
 
