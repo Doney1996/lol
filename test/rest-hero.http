@@ -1,0 +1,5 @@
+###获取所有英雄
+GET http://localhost:8080/v1/getAllHero
+
+### 赛季英雄禁用情况
+GET http://localhost:8080/v1/getHeroBySeason

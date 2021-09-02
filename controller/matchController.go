@@ -3,13 +3,16 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"lol/cache"
+	"lol/common"
 	"lol/entity"
+	"lol/expection"
 	"lol/repository/repo_match"
 	"lol/repository/repo_record"
 	"lol/repository/repo_season"
 	"math"
 	"net/http"
 	"sort"
+	"strconv"
 	"time"
 )
 
@@ -17,38 +20,48 @@ import (
 func OpenNewMatch(c *gin.Context) {
 	// 开启关联匹配表 状态为 未结算
 	gameType := c.GetString("gameType")
+	type Request struct {
+		PlayerNumber int64 `json:"player_number,omitempty"`
+	}
+	var request Request
+
+	err := c.BindJSON(&request)
+	common.DealErr(err)
+	if request.PlayerNumber < 2 || request.PlayerNumber > 5 {
+		panic(expection.BizErr{
+			Code: 410,
+			Msg:  "玩家数量不能小于2或大于5,当前玩家数量:" + strconv.FormatInt(request.PlayerNumber, 10),
+		})
+	}
 	currentSeason := repo_season.GetCurrentSeason(gameType, "0")
 	if currentSeason == (entity.Season{}) {
-		c.JSON(http.StatusOK, entity.Result{
-			Code:    101,
-			Message: "赛季还未开始，请开始赛季",
-			Data:    nil,
+		panic(expection.BizErr{
+			Code: 410,
+			Msg:  "有未结束的对局，不能开启新的",
 		})
-		return
 	}
 
 	seasonMatch := repo_match.GetMatchBySeasonAndStatus(currentSeason.Id, "0")
 
 	//当前赛有未结束的匹配
 	if len(seasonMatch) > 0 {
-		c.JSON(http.StatusOK, entity.Result{
-			Code:    101,
-			Message: "有未结束的对局，不能开启新的",
-			Data:    nil,
+		panic(expection.BizErr{
+			Code: 410,
+			Msg:  "有未结束的对局，不能开启新的",
 		})
-		return
 	}
 
 	m := entity.Match{
-		SeasonId:   currentSeason.Id,
-		LifeStatus: 0,
-		CreateTime: time.Now(),
-		UpdateTime: time.Now(),
+		SeasonId:     currentSeason.Id,
+		LifeStatus:   0,
+		PlayerNumber: request.PlayerNumber,
+		CreateTime:   time.Now(),
+		UpdateTime:   time.Now(),
 	}
 	match := repo_match.Insert(m)
 	c.JSON(http.StatusOK, entity.Result{
-		Code:    100,
-		Message: "开启新对局",
+		Code:    200,
+		Message: "开启新对局成功",
 		Data:    match,
 	})
 }
@@ -60,7 +73,7 @@ func GetLastMatch(c *gin.Context) {
 	currentSeason := repo_season.GetCurrentSeason(gameType, "0")
 	if currentSeason == (entity.Season{}) {
 		c.JSON(http.StatusOK, entity.Result{
-			Code:    101,
+			Code:    500,
 			Message: "赛季还未开始，请开始赛季",
 			Data:    nil,
 		})
@@ -69,7 +82,7 @@ func GetLastMatch(c *gin.Context) {
 	match := repo_match.GetLastBySeasonAndStatus(currentSeason.Id, "1")
 	if match == (entity.Match{}) {
 		c.JSON(http.StatusOK, entity.Result{
-			Code:    100,
+			Code:    200,
 			Message: "无战绩",
 			Data:    nil,
 		})
@@ -105,7 +118,7 @@ func GetLastMatch(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, entity.Result{
-		Code:    100,
+		Code:    200,
 		Message: "最新战绩",
 		Data:    resultList,
 	})
@@ -118,6 +131,12 @@ func CloseNewMatch(c *gin.Context) {
 	currentSeason := repo_season.GetCurrentSeason(gameType, "0")
 	match := repo_match.GetLastBySeasonId(currentSeason.Id)
 	records := repo_record.GetByMatchId(match.Id)
+	if len(records) < 1 {
+		panic(expection.BizErr{
+			Code: 410,
+			Msg:  "结算时不能没记录",
+		})
+	}
 
 	now := time.Now()
 	//计算出错 关闭场次
@@ -151,4 +170,9 @@ func CloseNewMatch(c *gin.Context) {
 	match.LifeStatus = 1
 	match.UpdateTime = now
 	repo_match.Update(match)
+	c.JSON(http.StatusOK, entity.Result{
+		Code:    200,
+		Message: "对局结束",
+		Data:    records,
+	})
 }

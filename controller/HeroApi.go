@@ -13,7 +13,7 @@ import (
 // GetAllHero 所有英雄
 func GetAllHero(c *gin.Context) {
 	c.JSON(http.StatusOK, entity.Result{
-		Code:    100,
+		Code:    200,
 		Message: "",
 		Data:    cache.HeroList,
 	})
@@ -26,7 +26,7 @@ func GetHeroBySeason(c *gin.Context) {
 	currentSeason := repo_season.GetCurrentSeason(gameType, "0")
 	if currentSeason == (entity.Season{}) {
 		c.JSON(http.StatusOK, entity.Result{
-			Code:    101,
+			Code:    410,
 			Message: "赛季还未开始，请开始赛季",
 			Data:    nil,
 		})
@@ -35,16 +35,17 @@ func GetHeroBySeason(c *gin.Context) {
 	//当前赛季所有结束的对局
 	matchList := repo_match.GetMatchBySeasonAndStatus(currentSeason.Id, "1")
 	var matchIds []int64
-	for i, e := range matchList {
-		matchIds[i] = e.Id
+	for _, e := range matchList {
+		matchIds = append(matchIds, e.Id)
 	}
 	records := repo_record.GetRecordsByMatchIds(matchIds)
 
 	//禁用的所有英雄的id
 	var disableHeroIds []int64
-	for i, e := range records {
-		disableHeroIds[i] = e.Id
+	for _, e := range records {
+		disableHeroIds = append(disableHeroIds, e.HeroId)
 	}
+
 	c.JSON(http.StatusOK, disableHeroIds)
 }
 

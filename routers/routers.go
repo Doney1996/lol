@@ -5,40 +5,39 @@ import (
 	"log"
 	"lol/common"
 	"lol/controller"
+	"lol/entity"
+	"lol/expection"
 	"net/http"
 	"runtime/debug"
 )
 
 func SetupRouter() *gin.Engine {
-
 	gin.SetMode(gin.DebugMode)
-
 	r := gin.Default()
-
+	r.Use(Recover)
 	r.Use(Cors())
-
-	r.POST("/login", controller.Login)
-	r.POST("/register", controller.RegisterUser)
-
 	//r.Use(common.JWTAuth())
 	r.Use(common.TempUser())
 	r.Use(common.Biz())
 	PathRouter(r)
 
-	r.Use(Recover)
 	return r
 }
 
 // PathRouter 添加路由的路径
 func PathRouter(r *gin.Engine) {
+
+	r.POST("/login", controller.Login)
+	r.POST("/register", controller.RegisterUser)
+
 	v1Group := r.Group("/v1")
 	{
 		// 对局
 		v1Group.POST("/addRecord", controller.AddRecord)
 
 		//英雄
-
 		v1Group.GET("/getAllHero", controller.GetAllHero)
+		v1Group.GET("/getHeroBySeason", controller.GetHeroBySeason)
 
 		v1Group.POST("/disable", controller.DisableHero)
 		v1Group.POST("/enable", controller.EnableAllHero)
@@ -89,10 +88,11 @@ func Recover(c *gin.Context) {
 			//封装通用json返回
 			//c.JSON(http.StatusOK, Result.Fail(errorToString(r)))
 			//Result.Fail不是本例的重点，因此用下面代码代替
-			c.JSON(http.StatusOK, gin.H{
-				"code": "500",
-				"msg":  errorToString(r),
-				"data": nil,
+
+			c.JSON(http.StatusOK, entity.Result{
+				Code:    errorToBizErr(r).Code,
+				Message: errorToBizErr(r).Msg,
+				Data:    nil,
 			})
 			//终止后续接口调用，不加的话recover到异常后，还会继续执行接口里后续代码
 			c.Abort()
@@ -103,11 +103,19 @@ func Recover(c *gin.Context) {
 }
 
 // recover错误，转string
-func errorToString(r interface{}) string {
+func errorToBizErr(r interface{}) expection.BizErr {
 	switch v := r.(type) {
+	case expection.BizErr:
+		return v
 	case error:
-		return v.Error()
+		return expection.BizErr{
+			Code: 500,
+			Msg:  v.Error(),
+		}
 	default:
-		return r.(string)
+		return expection.BizErr{
+			Code: 501,
+			Msg:  "系统繁忙",
+		}
 	}
 }

@@ -1,0 +1,27 @@
+
+### 开启新的对局
+POST http://localhost:8080/v1/openNewMatch
+Content-Type: application/json
+
+{
+ "player_number":4
+}
+
+<> 2021-08-30T161357.200.json
+<> 2021-08-30T161321.200.json
+<> 2021-08-30T155421.404.txt
+
+
+### 获取最后一次对局
+POST http://localhost:8080/v1/getLastMatch
+
+<> 2021-09-01T135552.200.json
+<> 2021-08-30T175239.200.json
+<> 2021-08-30T175101.200.json
+<> 2021-08-30T175032.200.json
+<> 2021-08-30T175009.200.json
+<> 2021-08-30T174906.200.json
+<> 2021-08-30T162533.200.json
+
+### 结束对局
+POST http://localhost:8080/v1/closeNewMatch

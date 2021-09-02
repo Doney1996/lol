@@ -15,7 +15,7 @@ func OpenNewSeason(c *gin.Context) {
 	currentSeason := repo_season.GetCurrentSeason(gameType, "0")
 	if currentSeason.Id > 0 {
 		c.JSON(http.StatusOK, entity.Result{
-			Code:    101,
+			Code:    500,
 			Message: "当前赛季没有结束",
 			Data:    nil,
 		})
@@ -37,7 +37,7 @@ func OpenNewSeason(c *gin.Context) {
 		}
 		repo_season.InsertSeason(&newSeason)
 		c.JSON(http.StatusOK, entity.Result{
-			Code:    100,
+			Code:    200,
 			Message: "新赛季创建成功",
 			Data:    nil,
 		})
@@ -50,7 +50,7 @@ func CloseSeason(c *gin.Context) {
 	if currentSeason.Id > 0 {
 		repo_season.CloseSeason(currentSeason.Id)
 		c.JSON(http.StatusOK, entity.Result{
-			Code:    100,
+			Code:    200,
 			Message: "当前赛季已经成功结束",
 			Data:    currentSeason.SeasonName,
 		})
