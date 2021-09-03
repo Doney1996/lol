@@ -43,3 +43,9 @@ func GetByMatchId(matchId int64) []entity.Record {
 	common.DealDbErrs(db)
 	return records
 }
+
+func GetRecordBYMatchIdAndUserId(matchId int64, userId int64) entity.Record {
+	var record entity.Record
+	_ = DB.Where("match_id = ? and user_id = ?", matchId, userId).Find(&record).RecordNotFound()
+	return record
+}

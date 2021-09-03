@@ -4,7 +4,7 @@ POST http://localhost:8080/v1/addRecord
 Content-Type: application/json
 
 {
-  "hero_id": 1,
+  "hero_id": 3,
   "match_id": 20,
   "score": 10.1,
   "unit_price": 10

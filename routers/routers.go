@@ -54,6 +54,7 @@ func PathRouter(r *gin.Engine) {
 		v1Group.POST("/openNewMatch", controller.OpenNewMatch)
 		v1Group.POST("/getLastMatch", controller.GetLastMatch)
 		v1Group.POST("/closeNewMatch", controller.CloseNewMatch)
+		v1Group.POST("/needSubmitNew", controller.NeedSubmitNew)
 
 	}
 }

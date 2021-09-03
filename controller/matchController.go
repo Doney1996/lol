@@ -178,3 +178,28 @@ func CloseNewMatch(c *gin.Context) {
 		Data:    records,
 	})
 }
+
+func NeedSubmitNew(c *gin.Context) {
+	gameType := c.GetString("gameType")
+	user := c.MustGet("claims").(common.CustomClaims)
+	currentSeason := repo_season.GetCurrentSeason(gameType, "0")
+	match := repo_match.GetLastBySeasonId(currentSeason.Id)
+	mapData := map[string]interface{}{"need_submit": true}
+	result := entity.Result{
+		Code:    200,
+		Message: "",
+		Data:    mapData,
+	}
+	if match.LifeStatus != 0 {
+		mapData["need_submit"] = false
+		c.JSON(http.StatusOK, result)
+		return
+	}
+	record := repo_record.GetRecordBYMatchIdAndUserId(match.Id, user.ID)
+	if record != (entity.Record{}) {
+		mapData["need_submit"] = true
+		c.JSON(http.StatusOK, result)
+		return
+	}
+	c.JSON(http.StatusOK, result)
+}
