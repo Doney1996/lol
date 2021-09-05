@@ -16,8 +16,8 @@ func SetupRouter() *gin.Engine {
 	r := gin.Default()
 	r.Use(Recover)
 	r.Use(Cors())
-	//r.Use(common.JWTAuth())
-	r.Use(common.TempUser())
+	r.Use(common.JWTAuth())
+	//r.Use(common.TempUser())
 	r.Use(common.Biz())
 	PathRouter(r)
 
@@ -54,7 +54,7 @@ func PathRouter(r *gin.Engine) {
 		v1Group.POST("/openNewMatch", controller.OpenNewMatch)
 		v1Group.POST("/getLastMatch", controller.GetLastMatch)
 		v1Group.POST("/closeNewMatch", controller.CloseNewMatch)
-		v1Group.POST("/needSubmitNew", controller.NeedSubmitNew)
+		v1Group.GET("/needSubmitNew", controller.NeedSubmitNew)
 
 	}
 }
@@ -83,16 +83,22 @@ func Cors() gin.HandlerFunc {
 func Recover(c *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
-			//打印错误堆栈信息
-			log.Printf("panic: %v\n", r)
-			debug.PrintStack()
+
+			bizErr := errorToBizErr(r)
+			if bizErr.Code >= 500 {
+				//打印错误堆栈信息
+				log.Printf("panic: %v\n", r)
+				debug.PrintStack()
+			} else {
+				log.Printf("===================== \n  %s \n %s \n %s \n %s \n ===================== \n", c.Request.Method, c.FullPath(), c.ClientIP(), bizErr.Msg)
+			}
 			//封装通用json返回
 			//c.JSON(http.StatusOK, Result.Fail(errorToString(r)))
 			//Result.Fail不是本例的重点，因此用下面代码代替
 
 			c.JSON(http.StatusOK, entity.Result{
-				Code:    errorToBizErr(r).Code,
-				Message: errorToBizErr(r).Msg,
+				Code:    bizErr.Code,
+				Message: bizErr.Msg,
 				Data:    nil,
 			})
 			//终止后续接口调用，不加的话recover到异常后，还会继续执行接口里后续代码

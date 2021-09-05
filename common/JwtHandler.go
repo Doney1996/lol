@@ -4,15 +4,24 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
+var notNeedAuth []string = []string{"login", "register"}
+
 // JWTAuth 中间件，检查token
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		fullPath := c.FullPath()
+		for _, s := range notNeedAuth {
+			if strings.Contains(fullPath, s) {
+				return
+			}
+		}
 		token := c.Request.Header.Get("token")
 		if token == "" {
 			c.JSON(http.StatusOK, gin.H{

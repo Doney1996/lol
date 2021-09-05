@@ -25,3 +25,6 @@ POST http://localhost:8080/v1/getLastMatch
 
 ### 结束对局
 POST http://localhost:8080/v1/closeNewMatch
+
+### 是否需要上传战绩
+GET http://localhost:8080/v1/needSubmitNew
