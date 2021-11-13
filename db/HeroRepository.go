@@ -38,6 +38,13 @@ func GetAllHero() []Hero {
 	return heros
 }
 
+func GetAllPlayer() []Player {
+	var players []Player
+	err := Db.Select(&players, "select * from player")
+	common.DealErr(err)
+	return players
+}
+
 func GetHeroList() []map[string]interface{} {
 	var sql = `select 
        id, hero_name, hero_other_name,
@@ -55,7 +62,7 @@ order by t.sum desc;`
 	query, err := Db.Query(sql)
 	common.DealErr(err)
 
-	list := make([]map[string]interface{},0)
+	list := make([]map[string]interface{}, 0)
 	columns, _ := query.Columns()
 	log.Println(columns)
 	for query.Next() {

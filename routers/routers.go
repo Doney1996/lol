@@ -26,6 +26,7 @@ func SetupRouter() *gin.Engine {
 		v1Group.GET("/getAllHero", controller.GetAllHero)
 		v1Group.POST("/jiesuan", controller.JieSuan)
 		v1Group.GET("/recent", controller.GetRecentResult)
+		v1Group.POST("/rpc_wegame", controller.GetInfoFromWeGame)
 	}
 	return r
 }

@@ -7,10 +7,37 @@ import (
 	"log"
 	"lol/common"
 	"lol/db"
+	"lol/rpc"
 	"net/http"
 	"strconv"
 	"time"
 )
+
+// GetInfoFromWeGame 从WeGame的接口获取战绩
+func GetInfoFromWeGame(c *gin.Context) {
+	players := db.GetAllPlayer()
+	var uids []int64
+	body, err := ioutil.ReadAll(c.Request.Body)
+	common.DealErr(err)
+	err = json.Unmarshal(body, &uids)
+	common.DealErr(err)
+
+	var openIds []*string
+	for _, uid := range uids {
+		for _, player := range players {
+			if player.Id == uid {
+				openIds = append(openIds, player.OpenId)
+			}
+		}
+	}
+
+	var result []rpc.Info
+	for _, openId := range openIds {
+		post := rpc.Post(*openId, "")
+		result = append(result, post.Battles[0])
+	}
+	c.JSON(http.StatusOK, result)
+}
 
 func AddRecord(c *gin.Context) {
 
@@ -21,7 +48,6 @@ func AddRecord(c *gin.Context) {
 	err = json.Unmarshal(body, &records)
 	common.DealErr(err)
 
-	log.Println(records)
 	for _, record := range records {
 		log.Println(records)
 		db.AddRecord(&record)

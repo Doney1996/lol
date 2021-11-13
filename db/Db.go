@@ -32,6 +32,15 @@ type Hero struct {
 	Position      string `db:"position"`
 }
 
+type Player struct {
+	Id       int64   `db:"id" json:"id,"`
+	Name     string  `db:"name" json:"name"`
+	GameName string  `db:"game_name" json:"game_name"`
+	Username string  `db:"username" json:"username"`
+	Password string  `db:"password" json:"password"`
+	OpenId   *string `db:"open_id" json:"open_id"`
+}
+
 var HeroList []Hero
 
 var Db *sqlx.DB
